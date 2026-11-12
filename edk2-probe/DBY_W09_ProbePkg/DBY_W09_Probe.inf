@@ -1,0 +1,18 @@
+## Minimal standalone EDK2 UEFI app; not a bootloader image.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = DBY_W09_Probe
+  FILE_GUID                      = 6cc7e8ce-7b97-4c0b-b243-6ca75bd7bdc3
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 0.1
+  ENTRY_POINT                    = UefiMain
+
+[Sources]
+  DBY_W09_Probe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
