@@ -1,0 +1,19 @@
+[PcdsFixedAtBuild.common]
+  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x80000000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x180000000
+  gAndromedaPkgTokenSpaceGuid.PcdMipiFrameBufferWidth|1600
+  gAndromedaPkgTokenSpaceGuid.PcdMipiFrameBufferHeight|2560
+  gAndromedaPkgTokenSpaceGuid.PcdSmbiosSystemBrand|"HUAWEI"
+  gAndromedaPkgTokenSpaceGuid.PcdSmbiosSystemModel|"MatePad 11"
+  gAndromedaPkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"DBY-W09"
+  gAndromedaPkgTokenSpaceGuid.PcdABLProduct|"kona"
+
+[PcdsDynamicDefault.common]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoHorizontalResolution|1600
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoVerticalResolution|2560
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoHorizontalResolution|1600
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoVerticalResolution|2560
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutColumn|200
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutRow|134
+  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutColumn|200
+  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutRow|134
