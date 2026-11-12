@@ -1,0 +1,34 @@
+{
+  "profile_version": 2,
+  "device": {
+    "marketing": "Huawei MatePad 11 (2021)",
+    "model_confirmed_by_owner": "DBY-W09",
+    "firmware_cmdline_devmodel": "DBY-W09S",
+    "board": "DBY",
+    "soc": "SM8250",
+    "platform": "kona",
+    "bootloader_hardware": "qcom",
+    "dtbo_active_index": 3,
+    "dtbo_active_board_name": "DBY_W09_VD",
+    "dtbo_active_boardid_cells": [
+      8,
+      2,
+      0,
+      6
+    ]
+  },
+  "uefi_addresses": {
+    "oem_fd_base": "0x9FC00000",
+    "oem_fd_size": "0x00300000",
+    "aloha_sm8250_default_base": "0x9FC41000",
+    "aloha_sm8250_default_size": "0x002BF000",
+    "status": "UNVERIFIED"
+  },
+  "status": {
+    "full_platform_compiled": false,
+    "uefi_shell_booted": false,
+    "flashable_image_ready": false,
+    "ci_aarch64_efi_app_built": false
+  },
+  "notice": "Unverified candidate: do NOT use any output for flashing or booting. No serial numbers or firmware dumps included."
+}
