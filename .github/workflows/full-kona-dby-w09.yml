@@ -2,9 +2,11 @@ name: FULL KonaPkg compile (DBY-W09 experimental, NOT FLASHABLE)
 on:
   workflow_dispatch:
   push:
-    branches: [main, full-kona-compile-v1]
+    branches: [main, full-kona-compile-v1, dby-w09-vd-hardware-audit]
     paths:
       - 'tools/stage_full_kona.py'
+      - 'tools/check_vd_memory.py'
+      - 'profiles/dby-w09-vd-reserved.json'
       - 'port/**'
       - '.github/workflows/full-kona-dby-w09.yml'
 permissions:
@@ -42,6 +44,20 @@ jobs:
           cd aloha
           mkdir -p "$GITHUB_WORKSPACE/board/ci-out"
           bash scripts/ci_setup.sh 2>&1 | tee "$GITHUB_WORKSPACE/board/ci-out/setup.log"
+          sudo apt-get install -y device-tree-compiler
+          # Check runtime memory before producing any Firmware Volume.
+          python3 "$GITHUB_WORKSPACE/board/tools/check_vd_memory.py" --json | tee "$GITHUB_WORKSPACE/board/ci-out/memory-audit.log"
+          # Replace Qualcomm MTP8250 DSDT with a NON-FUNCTIONAL DBY-W09 diagnostic stub.
+          BOARD=Platforms/KonaPkg/Device/huawei-dby-w09
+          test ! -e "$BOARD/ACPI/DSDT.aml"
+          iasl -p "$BOARD/ACPI/DSDT" "$BOARD/ACPI/DSDT.dsl" | tee "$GITHUB_WORKSPACE/board/ci-out/iasl.log"
+          test -s "$BOARD/ACPI/DSDT.aml"
+          # Compile only DBY_W09_VD rootparam overlay; never use it as a full dtbo.img.
+          dtc -@ -I dts -O dtb -o "$BOARD/DeviceTreeBlob/Android/dby-w09-vd-rootparam.dtbo" "$BOARD/DeviceTreeBlob/Android/dby-w09-vd-rootparam.dtso"
+          test "$(fdtget -t x "$BOARD/DeviceTreeBlob/Android/dby-w09-vd-rootparam.dtbo" / qcom,board-id)" = "200e 0"
+          test "$(fdtget -t x "$BOARD/DeviceTreeBlob/Android/dby-w09-vd-rootparam.dtbo" '/fragment@0/__overlay__' qcom,boardid)" = "8 2 0 6"
+          test "$(fdtget "$BOARD/DeviceTreeBlob/Android/dby-w09-vd-rootparam.dtbo" '/fragment@0/__overlay__' qcom,board_name)" = "DBY_W09_VD"
+          echo "PASS: DTBO board-id + rootparam, diagnostic DSDT, protected memory check" | tee "$GITHUB_WORKSPACE/board/ci-out/board-audit.log"
           python3 Platforms/KonaPkg/PlatformBuildNoSb.py TARGET=RELEASE TARGET_DEVICE=huawei-dby-w09 2>&1 | tee "$GITHUB_WORKSPACE/board/ci-out/build.log"
       - name: Validate firmware volume (NOT safe for DBY-W09 boot)
         shell: bash
@@ -59,7 +75,9 @@ jobs:
           if b'_FVH' not in b[:4096]: raise SystemExit('Not a UEFI Firmware Volume')
           meta={'device':'Huawei MatePad 11 DBY-W09','arch':'AARCH64','platform':'KonaPkg',
                 'firmware_volume_compiled':True,'hardware_validated':False,'flashable':False,
-                'contains_donor_components':'qcom-mtp8250 (not compatible with actual hardware)',
+                'contains_donor_components':'qcom-mtp8250 proprietary DXE binaries/lists, generic SM8250 ACPI tables',
+                'board_identity':'DBY_W09_VD (rootparam metadata only)',
+                'board_dsdt':'minimal diagnostic stub, NOT OS-usable',
                 'size':len(b),'sha256':hashlib.sha256(b).hexdigest()}
           Path('board/ci-out/manifest.json').write_text(json.dumps(meta,indent=2)+'\n')
           print(json.dumps(meta,indent=2))

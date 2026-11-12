@@ -1,0 +1,200 @@
+{
+  "source": "Huawei DBY-W09 owner-supplied original boot DTB + Linux /proc/iomem, 2026-11-12",
+  "device": "DBY-W09",
+  "board_variant": "DBY_W09_VD",
+  "note": "Only hardware address ranges. Device identifiers, vendor blobs, and original full DTBs deliberately excluded.",
+  "fdt_reserved": [
+    [
+      "0x80000000",
+      "0x80600000",
+      "hyp protected"
+    ],
+    [
+      "0x80700000",
+      "0x80860000",
+      "xbl/aop private"
+    ],
+    [
+      "0x80860000",
+      "0x80880000",
+      "command db"
+    ],
+    [
+      "0x80900000",
+      "0x80b00000",
+      "smem"
+    ],
+    [
+      "0x80b00000",
+      "0x85e00000",
+      "qtee/tzapps"
+    ],
+    [
+      "0x86200000",
+      "0x86700000",
+      "camera pil"
+    ],
+    [
+      "0x86700000",
+      "0x86800000",
+      "wlan pil"
+    ],
+    [
+      "0x86800000",
+      "0x86810000",
+      "ipa pil"
+    ],
+    [
+      "0x86810000",
+      "0x8681a000",
+      "ipa gsi pil"
+    ],
+    [
+      "0x8681a000",
+      "0x8681c000",
+      "gpu pil"
+    ],
+    [
+      "0x86900000",
+      "0x86e00000",
+      "npu pil"
+    ],
+    [
+      "0x86e00000",
+      "0x87300000",
+      "video pil"
+    ],
+    [
+      "0x87300000",
+      "0x87800000",
+      "cvp pil"
+    ],
+    [
+      "0x87800000",
+      "0x88c00000",
+      "cdsp pil"
+    ],
+    [
+      "0x88c00000",
+      "0x8a100000",
+      "slpi pil"
+    ],
+    [
+      "0x8a100000",
+      "0x8be00000",
+      "adsp pil"
+    ],
+    [
+      "0x8be00000",
+      "0x8bf00000",
+      "spss pil"
+    ],
+    [
+      "0x8bf00000",
+      "0x90500000",
+      "cdsp secure"
+    ],
+    [
+      "0x9c000000",
+      "0x9e300000",
+      "cont_splash"
+    ],
+    [
+      "0x9c000000",
+      "0x9c800000",
+      "display ram dump nested"
+    ],
+    [
+      "0x9e300000",
+      "0x9e400000",
+      "display fps"
+    ],
+    [
+      "0xb0000000",
+      "0xb0400000",
+      "rainbow logs"
+    ],
+    [
+      "0xb0400000",
+      "0xb0400800",
+      "bootfail memory"
+    ]
+  ],
+  "iomem_reserved": [
+    [
+      "0x9c000000",
+      "0x9e400000",
+      "display"
+    ],
+    [
+      "0xa0080000",
+      "0xa28e0000",
+      "Linux kernel code"
+    ],
+    [
+      "0xa28e0000",
+      "0xa2df0000",
+      "kernel reserved"
+    ],
+    [
+      "0xa2df0000",
+      "0xa3c75000",
+      "Linux kernel data"
+    ],
+    [
+      "0xafdac000",
+      "0xafe68000",
+      "kernel reserved"
+    ],
+    [
+      "0xe5c00000",
+      "0xf00ce000",
+      "kernel reserved"
+    ],
+    [
+      "0xf4400000",
+      "0xffc00000",
+      "kernel reserved"
+    ],
+    [
+      "0x1f7843000",
+      "0x1f9400000",
+      "kernel reserved"
+    ],
+    [
+      "0x1f94be000",
+      "0x1ff400000",
+      "kernel reserved"
+    ],
+    [
+      "0x1ff4be000",
+      "0x1ff4bf000",
+      "kernel reserved"
+    ],
+    [
+      "0x1ff4bf000",
+      "0x1ff4c0000",
+      "kernel reserved"
+    ],
+    [
+      "0x1ff4c0000",
+      "0x1ff4c1000",
+      "kernel reserved"
+    ],
+    [
+      "0x1ff4c1000",
+      "0x1ff4c4000",
+      "kernel reserved"
+    ],
+    [
+      "0x1ff4c4000",
+      "0x1ff8af000",
+      "kernel reserved"
+    ],
+    [
+      "0x1ff8af000",
+      "0x200000000",
+      "kernel reserved"
+    ]
+  ]
+}

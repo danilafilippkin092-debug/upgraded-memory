@@ -1,7 +1,7 @@
 name: DBY-W09 source audit (no flashing)
 on:
   push:
-    branches: [dby-w09-port-wip]
+    branches: [main, dby-w09-port-wip, dby-w09-vd-hardware-audit]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -17,4 +17,16 @@ jobs:
       - name: Audit board source candidates
         run: |
           python3 tools/audit.py
+          python3 tools/check_vd_memory.py --json
           python3 -m unittest discover -s tests -v
+      - name: Compile DBY-W09 VD identity overlay and diagnostic DSDT
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y device-tree-compiler acpica-tools
+          B=port/Platforms/KonaPkg/Device/huawei-dby-w09
+          mkdir -p /tmp/dby-vd-ci
+          dtc -@ -I dts -O dtb -o /tmp/dby-vd-ci/dby-w09-vd.dtbo "$B/DeviceTreeBlob/Android/dby-w09-vd-rootparam.dtso"
+          test "$(fdtget -t x /tmp/dby-vd-ci/dby-w09-vd.dtbo / qcom,board-id)" = "200e 0"
+          test "$(fdtget -t x /tmp/dby-vd-ci/dby-w09-vd.dtbo '/fragment@0/__overlay__' qcom,boardid)" = "8 2 0 6"
+          iasl -p /tmp/dby-vd-ci/DSDT "$B/ACPI/DSDT.dsl"
+          test -s /tmp/dby-vd-ci/DSDT.aml

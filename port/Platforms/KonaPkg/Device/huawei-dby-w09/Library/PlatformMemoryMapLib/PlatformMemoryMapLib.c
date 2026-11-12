@@ -11,7 +11,9 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] = {
   /* XBL / uefiplat.cfg MemoryMap */
     /* OMITTED: IPC SHM 0x805D0000-0x805EFFFF overlaps HYP. */
     {"MPSS EFS          ", 0x0080600000ULL, 0x0000100000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , Reserv, WRITE_BACK_XN},
-    {"BOOT INFO         ", 0x0080700000ULL, 0x0000100000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , BsData, WRITE_BACK_XN},
+    // IMPORTANT: stock DTB /reserved-memory/xbl_aop_region spans 0x80700000..0x80860000.
+    // Never advertise BOOT INFO as general-purpose boot-services data.
+    {"BOOT INFO         ", 0x0080700000ULL, 0x0000100000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , Reserv, WRITE_BACK_XN},
     {"AOP CMD DB        ", 0x0080860000ULL, 0x0000020000ULL, AddMem               , MEM_RES  , UNCACHEABLE       , Reserv, UNCACHED_UNBUFFERED_XN},
     {"XBL Log Buffer    ", 0x0080884000ULL, 0x0000010000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , Reserv, WRITE_BACK_XN},
     {"SMEM              ", 0x0080900000ULL, 0x0000200000ULL, AddMem               , MEM_RES  , UNCACHEABLE       , Reserv, UNCACHED_UNBUFFERED_XN},
@@ -23,7 +25,9 @@ static ARM_MEMORY_REGION_DESCRIPTOR_EX gDeviceMemoryDescriptorEx[] = {
     {"DBI Dump          ", 0x009E400000ULL, 0x0000F00000ULL, NoHob                , MMAP_IO  , INITIALIZED       , Conv  , UNCACHED_UNBUFFERED_XN},
     {"FV Region         ", 0x009F800000ULL, 0x0000200000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , BsData, WRITE_BACK_XN},
     {"ABOOT FV          ", 0x009FA00000ULL, 0x0000200000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , Reserv, WRITE_BACK_XN},
-    {"UEFI FD           ", 0x009FC00000ULL, 0x0000300000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , BsData, WRITE_BACK},
+    // Split OEM 3 MiB reservation; configured Kona.fdf places FD at +0x41000.
+    {"OEM FD Header    ", 0x009FC00000ULL, 0x0000041000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , Reserv, WRITE_BACK_XN},
+    {"UEFI FD           ", 0x009FC41000ULL, 0x00002BF000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , BsData, WRITE_BACK},
     {"SEC Heap          ", 0x009FF00000ULL, 0x000008C000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , BsData, WRITE_BACK_XN},
     {"CPU Vectors       ", 0x009FF8C000ULL, 0x0000001000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , BsData, WRITE_BACK},
     {"MMU PageTables    ", 0x009FF8D000ULL, 0x0000003000ULL, AddMem               , SYS_MEM  , SYS_MEM_CAP       , BsData, WRITE_BACK_XN},
