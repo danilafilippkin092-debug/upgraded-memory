@@ -16,7 +16,7 @@
 
 Выполнена реальная сборка Project Aloha `KonaPkg` / `AARCH64` / `RELEASE_CLANGPDB` с целью `huawei-dby-w09`. Получен `SM8250_EFI.fd` (2 879 488 байт). [Успешный GitHub Actions](https://github.com/danilafilippkin092-debug/upgraded-memory/actions/runs/43278798515), отчёт: `docs/FULL_KONA_CI_RU.md`.
 
-Для сборки используется донорский набор драйверов, ACPI и конфигурации от `qcom-mtp8250`, поэтому **это НЕ аппаратно-проверенный порт для Huawei DBY-W09**. Загрузочный `boot.img` намеренно не создаётся, а `.fd` нельзя прошивать.
+В новой версии VD удалены донорские Android DTB и DSDT MTP8250. Добавлены точный минимальный `DBY_W09_VD` rootparam overlay и диагностическая DSDT, а память проверяется по исходному DTB и `/proc/iomem`. [Успешная повторная компиляция полного KonaPkg](https://github.com/danilafilippkin092-debug/upgraded-memory/actions/runs/43282797748). Но DXE-драйверы и общие ACPI всё ещё донорские, а новый DSDT пока не описывает реальные устройства. **Это НЕ аппаратно-проверенный порт для Huawei DBY-W09**. Загрузочный `boot.img` намеренно не создаётся, а `.fd` нельзя прошивать.
 
 Вкладка GitHub **Actions → FULL KonaPkg compile (DBY-W09 experimental, NOT FLASHABLE) → Run workflow** позволяет повторить сборку.
 
@@ -47,7 +47,7 @@ python3 tools/stage.py --upstream ./mu_aloha_platforms --apply
 
 `stage.py` переносит только кандидатные исходники, не генерирует boot image, не запускает команды записи на планшет.
 
-**Подробности:** `docs/FULL_KONA_CI_RU.md`, `docs/EDK2_CI_RU.md`, `docs/BUILD_STATUS_RU.md`, `docs/UPSTREAM_INTEGRATION_RU.md`, `docs/SAFETY_RU.md`.
+**Подробности:** `docs/DBY_W09_VD_BOARD_AUDIT_RU.md`, `docs/DRIVER_COMPATIBILITY_RU.md`, `docs/OEM_DXE_INVENTORY_RU.md`, `docs/FULL_KONA_CI_RU.md`, `docs/EDK2_CI_RU.md`, `docs/BUILD_STATUS_RU.md`, `docs/UPSTREAM_INTEGRATION_RU.md`, `docs/SAFETY_RU.md`.
 
 ## Исходные проекты
 
