@@ -1,0 +1,70 @@
+name: EDK2 AArch64 compile (Huawei DBY-W09 probe)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout candidate sources
+        uses: actions/checkout@v4
+        with:
+          path: board
+      - name: Validate DBY-W09 identity and safety flags
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('board/profiles/dby-w09.json').read_text())
+          assert d['device']['model_confirmed_by_owner']=='DBY-W09'
+          assert d['device']['board']=='DBY'
+          assert d['device']['platform']=='kona'
+          assert d['device']['dtbo_active_index']==3
+          assert d['status']['flashable_image_ready'] is False
+          print('PASS: DBY-W09 source profile; NOT flashable')
+          PY
+      - name: Install AArch64 EDK2 toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential uuid-dev nasm acpica-tools gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu python3-venv
+      - name: Checkout pinned TianoCore EDK2
+        uses: actions/checkout@v4
+        with:
+          repository: tianocore/edk2
+          ref: edk2-stable202508
+          path: edk2
+          submodules: recursive
+      - name: Compile AArch64 EFI application
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a board/edk2-probe/DBY_W09_ProbePkg edk2/
+          cd edk2
+          export WORKSPACE="$PWD"
+          export PACKAGES_PATH="$WORKSPACE"
+          export GCC5_AARCH64_PREFIX=/usr/bin/aarch64-linux-gnu-
+          make -C BaseTools -j"$(nproc)"
+          source edksetup.sh BaseTools
+          build -a AARCH64 -t GCC5 -b RELEASE -p DBY_W09_ProbePkg/DBY_W09_ProbePkg.dsc -n "$(nproc)"
+      - name: Verify AArch64 PE32+ EFI application
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          mapfile -t files < <(find edk2/Build/DBY_W09_Probe -type f -name DBY_W09_Probe.efi)
+          test "${#files[@]}" -gt 0
+          cp "${files[0]}" artifacts/DBY-W09-EDK2-Probe-NOT-FLASHABLE.efi
+          python3 board/tools/verify_efi.py artifacts/DBY-W09-EDK2-Probe-NOT-FLASHABLE.efi --out artifacts/manifest.json
+          (cd artifacts && sha256sum *.efi > SHA256SUMS.txt)
+      - name: Upload compile-only output (never flash)
+        uses: actions/upload-artifact@v4
+        with:
+          name: DBY-W09-ARM64-EFI-PROBE-NOT-FLASHABLE
+          path: artifacts/
+          if-no-files-found: error
