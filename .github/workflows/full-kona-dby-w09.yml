@@ -2,11 +2,12 @@ name: FULL KonaPkg compile (DBY-W09 experimental, NOT FLASHABLE)
 on:
   workflow_dispatch:
   push:
-    branches: [main, dby-w09-preflight-fixes]
+    branches: [main, dby-w09-deep-fv-audit]
     paths:
       - 'tools/stage_full_kona.py'
       - 'tools/patch_uefiplat.py'
       - 'tools/verify_fv.py'
+      - 'tools/verify_nested_fv.py'
       - 'tests/test_fv_preflight.py'
       - 'tools/check_vd_memory.py'
       - 'profiles/dby-w09-vd-reserved.json'
@@ -81,6 +82,9 @@ jobs:
             board/ci-out/DBY-W09-COMPILE-ONLY-NOT-FLASHABLE.fd \
             --expected-cfg aloha/Platforms/KonaPkg/Device/huawei-dby-w09/Binaries/RawFiles/uefiplat.cfg \
             --out board/ci-out/manifest.json
+          python3 board/tools/verify_nested_fv.py \
+            board/ci-out/DBY-W09-COMPILE-ONLY-NOT-FLASHABLE.fd \
+            --output board/ci-out/nested-fv-audit.json
       - name: Upload diagnostic logs (even if build fails)
         if: always()
         uses: actions/upload-artifact@v4
@@ -96,4 +100,5 @@ jobs:
           path: |
             board/ci-out/*.fd
             board/ci-out/manifest.json
+            board/ci-out/nested-fv-audit.json
           if-no-files-found: error
