@@ -1,0 +1,82 @@
+name: FULL KonaPkg compile (DBY-W09 experimental, NOT FLASHABLE)
+on:
+  workflow_dispatch:
+  push:
+    branches: [full-kona-compile-v1]
+    paths:
+      - 'tools/stage_full_kona.py'
+      - 'port/**'
+      - '.github/workflows/full-kona-dby-w09.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      TARGET_DEVICE: huawei-dby-w09
+    steps:
+      - name: Checkout DBY-W09 candidate source
+        uses: actions/checkout@v4
+        with:
+          path: board
+      - name: Checkout Project Aloha incl. submodules
+        uses: actions/checkout@v4
+        with:
+          repository: Project-Aloha/mu_aloha_platforms
+          ref: main
+          submodules: recursive
+          path: aloha
+      - name: Stage DBY-W09 full KonaPkg integration
+        run: |
+          set -euo pipefail
+          python3 board/tools/stage_full_kona.py --upstream aloha
+          test -f aloha/Platforms/KonaPkg/Device/huawei-dby-w09/DXE.dsc.inc
+          test -f aloha/Platforms/KonaPkg/Device/huawei-dby-w09/DXE.inc
+          test -f aloha/Platforms/KonaPkg/Device/huawei-dby-w09/APRIORI.inc
+          test -f aloha/Platforms/KonaPkg/Device/huawei-dby-w09/Library/PlatformMemoryMapLib/PlatformMemoryMapLib.c
+      - name: Compile EDK2 Project Aloha full KonaPkg / RELEASE / AARCH64
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd aloha
+          mkdir -p "$GITHUB_WORKSPACE/board/ci-out"
+          bash scripts/ci_setup.sh 2>&1 | tee "$GITHUB_WORKSPACE/board/ci-out/setup.log"
+          python3 Platforms/KonaPkg/PlatformBuildNoSb.py TARGET=RELEASE TARGET_DEVICE=huawei-dby-w09 2>&1 | tee "$GITHUB_WORKSPACE/board/ci-out/build.log"
+      - name: Validate firmware volume (NOT safe for DBY-W09 boot)
+        shell: bash
+        run: |
+          set -euo pipefail
+          find aloha/Build/KonaPkg -type f -name '*EFI.fd' -print
+          FD=$(find aloha/Build/KonaPkg -type f -name 'SM8250_EFI.fd' -print -quit)
+          test -n "$FD" && test -s "$FD"
+          cp "$FD" board/ci-out/DBY-W09-COMPILE-ONLY-NOT-FLASHABLE.fd
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          f=Path('board/ci-out/DBY-W09-COMPILE-ONLY-NOT-FLASHABLE.fd')
+          b=f.read_bytes()
+          if b'_FVH' not in b[:4096]: raise SystemExit('Not a UEFI Firmware Volume')
+          meta={'device':'Huawei MatePad 11 DBY-W09','arch':'AARCH64','platform':'KonaPkg',
+                'firmware_volume_compiled':True,'hardware_validated':False,'flashable':False,
+                'contains_donor_components':'qcom-mtp8250 (not compatible with actual hardware)',
+                'size':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+          Path('board/ci-out/manifest.json').write_text(json.dumps(meta,indent=2)+'\n')
+          print(json.dumps(meta,indent=2))
+          PY
+      - name: Upload diagnostic logs (even if build fails)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DBY-W09-KonaPkg-logs
+          path: board/ci-out/*.log
+          if-no-files-found: warn
+      - name: Upload unflashable firmware volume only when build succeeds
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DBY-W09-FULL-KonaPkg-FD-NOT-FLASHABLE
+          path: |
+            board/ci-out/*.fd
+            board/ci-out/manifest.json
+          if-no-files-found: error
