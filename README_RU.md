@@ -12,7 +12,15 @@
 - OEM XBL UEFI FV: `0x9FC00000 + 0x00300000`; дефолт Project Aloha sm8250: `0x9FC41000 + 0x002BF000`. Адреса НЕ подтверждены для загрузки пересобранной прошивки.
 - Порт `port/Platforms/KonaPkg/Device/huawei-dby-w09` — **непроверенная заготовка**; отсутствуют `APRIORI.inc`, `DXE.inc`, `DXE.dsc.inc`, OEM-контрольные файлы, корректные ACPI/DTB, подтвержденный способ загрузки.
 
-## GitHub Actions
+## Полная компиляция KonaPkg: УСПЕШНО (только CI)
+
+Выполнена реальная сборка Project Aloha `KonaPkg` / `AARCH64` / `RELEASE_CLANGPDB` с целью `huawei-dby-w09`. Получен `SM8250_EFI.fd` (2 879 488 байт). [Успешный GitHub Actions](https://github.com/danilafilippkin092-debug/upgraded-memory/actions/runs/43278798515), отчёт: `docs/FULL_KONA_CI_RU.md`.
+
+Для сборки используется донорский набор драйверов, ACPI и конфигурации от `qcom-mtp8250`, поэтому **это НЕ аппаратно-проверенный порт для Huawei DBY-W09**. Загрузочный `boot.img` намеренно не создаётся, а `.fd` нельзя прошивать.
+
+Вкладка GitHub **Actions → FULL KonaPkg compile (DBY-W09 experimental, NOT FLASHABLE) → Run workflow** позволяет повторить сборку.
+
+## Отдельная диагностика EDK2
 
 Вкладка **Actions** → **EDK2 AArch64 compile (Huawei DBY-W09 probe)** → **Run workflow**.
 
@@ -39,7 +47,7 @@ python3 tools/stage.py --upstream ./mu_aloha_platforms --apply
 
 `stage.py` переносит только кандидатные исходники, не генерирует boot image, не запускает команды записи на планшет.
 
-**Подробности:** `docs/EDK2_CI_RU.md`, `docs/BUILD_STATUS_RU.md`, `docs/UPSTREAM_INTEGRATION_RU.md`, `docs/SAFETY_RU.md`.
+**Подробности:** `docs/FULL_KONA_CI_RU.md`, `docs/EDK2_CI_RU.md`, `docs/BUILD_STATUS_RU.md`, `docs/UPSTREAM_INTEGRATION_RU.md`, `docs/SAFETY_RU.md`.
 
 ## Исходные проекты
 
