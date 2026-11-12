@@ -21,7 +21,7 @@ class FirmwarePreflightTests(unittest.TestCase):
     def test_donor_patch_and_check(self):
         final=patch(DONOR)
         rows=check(final)
-        self.assertEqual(len(rows),5)
+        self.assertEqual(len(rows),6)
         self.assertIn("0x80700000",final)
         self.assertIn("0x80884000",final)
         self.assertIn("0x090BA000",final)
