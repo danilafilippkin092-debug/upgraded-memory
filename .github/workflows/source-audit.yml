@@ -1,7 +1,7 @@
 name: DBY-W09 source audit (no flashing)
 on:
   push:
-    branches: [main, dby-w09-port-wip, dby-w09-vd-hardware-audit]
+    branches: [main, dby-w09-preflight-fixes]
   pull_request:
   workflow_dispatch:
 permissions:
