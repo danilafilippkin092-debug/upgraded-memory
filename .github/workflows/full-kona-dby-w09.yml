@@ -2,7 +2,7 @@ name: FULL KonaPkg compile (DBY-W09 experimental, NOT FLASHABLE)
 on:
   workflow_dispatch:
   push:
-    branches: [full-kona-compile-v1]
+    branches: [main, full-kona-compile-v1]
     paths:
       - 'tools/stage_full_kona.py'
       - 'port/**'
