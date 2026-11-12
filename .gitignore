@@ -1,0 +1,10 @@
+# Do not publish firmware extracts or personal hardware identifiers.
+local-assets/
+*.img
+*.fd
+*.efi
+*.dtb
+*.dtbo
+Build/
+__pycache__/
+*.pyc
