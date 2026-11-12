@@ -50,7 +50,10 @@ jobs:
           export PACKAGES_PATH="$WORKSPACE"
           export GCC5_AARCH64_PREFIX=/usr/bin/aarch64-linux-gnu-
           make -C BaseTools -j"$(nproc)"
+          # TianoCore edksetup.sh expects unset variables; avoid Bash nounset during source.
+          set +u
           source edksetup.sh BaseTools
+          set -u
           build -a AARCH64 -t GCC5 -b RELEASE -p DBY_W09_ProbePkg/DBY_W09_ProbePkg.dsc -n "$(nproc)"
       - name: Verify AArch64 PE32+ EFI application
         shell: bash
