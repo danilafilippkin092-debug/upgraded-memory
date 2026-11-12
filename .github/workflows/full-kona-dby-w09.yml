@@ -2,9 +2,12 @@ name: FULL KonaPkg compile (DBY-W09 experimental, NOT FLASHABLE)
 on:
   workflow_dispatch:
   push:
-    branches: [main, full-kona-compile-v1, dby-w09-vd-hardware-audit]
+    branches: [main, dby-w09-preflight-fixes]
     paths:
       - 'tools/stage_full_kona.py'
+      - 'tools/patch_uefiplat.py'
+      - 'tools/verify_fv.py'
+      - 'tests/test_fv_preflight.py'
       - 'tools/check_vd_memory.py'
       - 'profiles/dby-w09-vd-reserved.json'
       - 'port/**'
@@ -26,13 +29,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Project-Aloha/mu_aloha_platforms
-          ref: main
+          # Pin project sources to the exact revision used by our previous success.
+          ref: cf5dcae4d15ee9e01faae69e03a2a279bf97e832
           submodules: recursive
           path: aloha
       - name: Stage DBY-W09 full KonaPkg integration
         run: |
           set -euo pipefail
           python3 board/tools/stage_full_kona.py --upstream aloha
+          # Fix the otherwise wrong QCOM MTP8250 config embedded inside final FD.
+          CFG=aloha/Platforms/KonaPkg/Device/huawei-dby-w09/Binaries/RawFiles/uefiplat.cfg
+          python3 board/tools/patch_uefiplat.py "$CFG"
+          python3 board/tools/patch_uefiplat.py "$CFG" --check
           test -f aloha/Platforms/KonaPkg/Device/huawei-dby-w09/DXE.dsc.inc
           test -f aloha/Platforms/KonaPkg/Device/huawei-dby-w09/DXE.inc
           test -f aloha/Platforms/KonaPkg/Device/huawei-dby-w09/APRIORI.inc
@@ -67,21 +75,12 @@ jobs:
           FD=$(find aloha/Build/KonaPkg -type f -name 'SM8250_EFI.fd' -print -quit)
           test -n "$FD" && test -s "$FD"
           cp "$FD" board/ci-out/DBY-W09-COMPILE-ONLY-NOT-FLASHABLE.fd
-          python3 - <<'PY'
-          import hashlib,json
-          from pathlib import Path
-          f=Path('board/ci-out/DBY-W09-COMPILE-ONLY-NOT-FLASHABLE.fd')
-          b=f.read_bytes()
-          if b'_FVH' not in b[:4096]: raise SystemExit('Not a UEFI Firmware Volume')
-          meta={'device':'Huawei MatePad 11 DBY-W09','arch':'AARCH64','platform':'KonaPkg',
-                'firmware_volume_compiled':True,'hardware_validated':False,'flashable':False,
-                'contains_donor_components':'qcom-mtp8250 proprietary DXE binaries/lists, generic SM8250 ACPI tables',
-                'board_identity':'DBY_W09_VD (rootparam metadata only)',
-                'board_dsdt':'minimal diagnostic stub, NOT OS-usable',
-                'size':len(b),'sha256':hashlib.sha256(b).hexdigest()}
-          Path('board/ci-out/manifest.json').write_text(json.dumps(meta,indent=2)+'\n')
-          print(json.dumps(meta,indent=2))
-          PY
+          # Verify FVH length+checksum, FFS structure, embedded board config,
+          # and exact byte-for-byte equality to the staged DBY-W09 candidate.
+          PYTHONPATH=board python3 board/tools/verify_fv.py \
+            board/ci-out/DBY-W09-COMPILE-ONLY-NOT-FLASHABLE.fd \
+            --expected-cfg aloha/Platforms/KonaPkg/Device/huawei-dby-w09/Binaries/RawFiles/uefiplat.cfg \
+            --out board/ci-out/manifest.json
       - name: Upload diagnostic logs (even if build fails)
         if: always()
         uses: actions/upload-artifact@v4
