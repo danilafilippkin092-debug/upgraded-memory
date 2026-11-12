@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 PORT=ROOT/'port/Platforms/KonaPkg/Device/huawei-dby-w09'
 DEVICE_REL=Path('Platforms/KonaPkg/Device/huawei-dby-w09')
-ALLOWED={'.c','.h','.inf','.inc'}
+ALLOWED={'.c','.h','.inf','.inc','.dsl','.dtso'}
 
 def stage(upstream: Path,apply=False):
     upstream=upstream.resolve()
