@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// Reconstructed ONLY from DBY-W09 firmware DTBO index=3 metadata.
+// Not a complete OEM DTBO or bootable Android device-tree replacement.
+/dts-v1/;
+/plugin/;
+
+/ {
+    model = "Huawei Technologies, Inc. DBY-W09";
+    compatible = "qcom,kona-qrd", "qcom,kona", "qcom,qrd";
+    qcom,board-id = <0x200e 0>;
+
+    fragment@0 {
+        target-path = "/rootparam";
+        __overlay__ {
+            qcom,boardid = <0x08 0x02 0x00 0x06>;
+            qcom,board_name = "DBY_W09_VD";
+            qcom,product_name = "DBY-W09";
+            hardware_version = "SH1DBSLM";
+            huawei,modem_id = <0xffffffff 0x00>;
+        };
+    };
+};
