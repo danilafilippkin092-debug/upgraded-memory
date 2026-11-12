@@ -28,6 +28,14 @@ def check(text: str):
         matched=[r for r in rows if r[2]==name]
         if len(matched)!=1 or matched[0][:2]!=(base,size) or matched[0][3]!=typ:
             raise ValueError(f"Invalid {name}: expected {hex(base)}, {hex(size)}, {typ}; got {matched}")
+    # The DDR MemoryMap must be ordered for the Qualcomm firmware parser.
+    memory_part=text.split("[MemoryMap]",1)[1].split("[RegisterMap]",1)[0]
+    mem_rows=lines_for(memory_part)
+    for i in range(1,len(mem_rows)):
+        if mem_rows[i][0] < mem_rows[i-1][0]:
+            raise ValueError(f"Unsorted DDR map: {mem_rows[i-1][2]} before {mem_rows[i][2]}")
+        if mem_rows[i][0] < mem_rows[i-1][0]+mem_rows[i-1][1]:
+            raise ValueError(f"Overlapping DDR regions: {mem_rows[i-1][2]} and {mem_rows[i][2]}")
     for base,size,name,typ,_ in rows:
         if name=="IPC SHM" and base==0x805D0000:
             raise ValueError("Legacy IPC SHM overlaps reserved 0x80000000..0x80600000")
@@ -59,6 +67,13 @@ def patch(original: str):
         if updated.count(before)!=1:
             raise ValueError(f"Refusing unrecognized donor uefiplat.cfg; missing or duplicate: {before[:72]}")
         updated=updated.replace(before,after,1)
+    # Move the relocated BOOT INFO after MPSS EFS to preserve address order.
+    boot='0x80700000, 0x00100000, "BOOT INFO",         AddMem, SYS_MEM, SYS_MEM_CAP, Reserv, WRITE_BACK_XN'
+    mpss='0x80600000, 0x00100000, "MPSS EFS",          AddMem, SYS_MEM, SYS_MEM_CAP, Reserv, WRITE_BACK_XN'
+    if boot in updated and mpss in updated:
+        if updated.count(boot)!=1 or updated.count(mpss)!=1:
+            raise ValueError("Duplicate memory descriptor")
+        updated=updated.replace(boot+"\n"+mpss,mpss+"\n"+boot,1)
     anchors={
        '0x80860000, 0x00020000, "AOP CMD DB",':
        '0x80884000, 0x00010000, "XBL Log Buffer",    AddMem, SYS_MEM, SYS_MEM_CAP, Reserv, WRITE_BACK_XN',
