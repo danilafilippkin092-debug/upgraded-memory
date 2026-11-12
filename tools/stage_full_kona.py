@@ -2,9 +2,10 @@
 """Stage a FULL KonaPkg build tree for DBY-W09 on GitHub Actions.
 
 This is an EXPERIMENTAL compile harness, not a validated Huawei firmware port.
-It inherits qcom-mtp8250 proprietary firmware drivers/ACPI/DTB/board resources
-from Project Aloha only to resolve source dependencies. Those are NOT safe for
-the Huawei device. Crucially: we disable Android boot image packaging.
+It inherits qcom-mtp8250 proprietary firmware drivers / DXE lists and generic
+SM8250 ACPI tables only to resolve dependencies. They are NOT known to work
+on Huawei DBY-W09. Device-specific DSDT and DTBO are compiled from VD-specific
+candidate sources; donor Android DTB is excluded. Boot image packing disabled.
 """
 from __future__ import annotations
 import argparse
@@ -22,6 +23,8 @@ REQUIRED_CANDIDATE=[
     "Library/PlatformMemoryMapLib/PlatformMemoryMapLib.inf",
     "Library/PlatformConfigurationMapLib/PlatformConfigurationMapLib.c",
     "Library/PlatformConfigurationMapLib/PlatformConfigurationMapLib.inf",
+    "DeviceTreeBlob/Android/dby-w09-vd-rootparam.dtso",
+    "ACPI/DSDT.dsl",
 ]
 # No postbuild packaging (Android boot image) and no flashable artifacts.
 def disable_boot_pack(upstream: Path):
@@ -64,12 +67,22 @@ def main():
         dst.parent.mkdir(parents=True,exist_ok=True)
         shutil.copy2(src,dst)
         copied.append(name)
-    # Upstream build asks for Android DTB by derived name if PostBuild is enabled.
-    # We deliberately do not generate/rename any DTB here.
+    # Remove Qualcomm MTP8250 device-specific hardware blobs from target.
+    # The compile-stage will generate a VD-specific DSDT. Do not retain donor AML.
+    donor_aml=target/"ACPI/DSDT.aml"
+    if not donor_aml.exists(): raise SystemExit("Expected donor DSDT.aml missing")
+    donor_aml.unlink()
+    for donor_dtb in (target/"DeviceTreeBlob/Android").glob("*.dtb"):
+        donor_dtb.unlink()
+    for donor_dtbo in (target/"DeviceTreeBlob/Android").glob("*.dtbo"):
+        donor_dtbo.unlink()
+    # No Android DTB packing: PostBuild image generation is disabled.
     disable_boot_pack(upstream)
     print("STAGED",BOARD)
     print("DBY-W09 candidate sources:",", ".join(copied))
-    print("INHERITED FROM qcom-mtp8250: vendor binaries, ACPI, APRIORI, DXE lists, resources, boot configs")
+    print("INHERITED FROM qcom-mtp8250: vendor DXE binaries/lists, shared SM8250 ACPI, assets")
+    print("REMOVED donor ACPI/DSDT.aml and donor Android *.dtb, *.dtbo")
+    print("TO BE COMPILED: DBY-W09 VD diagnostic DSDT + rootparam-only DTBO")
     print("NOT HARDWARE VALIDATED, NOT FLASHABLE, POSTBUILD ANDROID IMAGE PACKAGING DISABLED")
 
 if __name__=="__main__":
